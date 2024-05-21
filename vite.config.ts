@@ -4,8 +4,6 @@ import { VitePWA } from 'vite-plugin-pwa'
 
 let faviconURL = '/favicon.svg'
 
-
-
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
