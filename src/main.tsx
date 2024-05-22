@@ -1,4 +1,3 @@
-// src/main.tsx or src/main.ts
 import React from 'react';
 import ReactDOM from 'react-dom';
 import App from './App';
