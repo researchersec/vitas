@@ -1,6 +1,5 @@
-// src/App.tsx
 import React, { useEffect, useState } from 'react';
-import { BrowserRouter as Router, Route, Switch, Link } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Switch, Link, useHistory } from 'react-router-dom';
 import { getItemData } from './dataLoader';
 
 interface Item {
@@ -14,18 +13,44 @@ interface Item {
   numAuctions: number;
 }
 
-const Home = ({ items }: { items: Item[] }) => (
-  <div>
-    <h2>Items</h2>
-    <div className="list-group">
-      {items.map(item => (
-        <Link key={item.itemId} to={`/item/${item.itemId}`} className="list-group-item list-group-item-action">
-          Item ID: {item.itemId}
-        </Link>
-      ))}
+const Home = ({ items }: { items: Item[] }) => {
+  const [searchTerm, setSearchTerm] = useState('');
+  const history = useHistory();
+
+  const handleSearch = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    history.push(`/item/${searchTerm}`);
+  };
+
+  return (
+    <div>
+      <h2>Items</h2>
+      <form onSubmit={handleSearch} className="mb-3">
+        <div className="input-group">
+          <input
+            type="text"
+            className="form-control"
+            placeholder="Search by Item ID"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          <div className="input-group-append">
+            <button className="btn btn-primary" type="submit">
+              Search
+            </button>
+          </div>
+        </div>
+      </form>
+      <div className="list-group">
+        {items.map(item => (
+          <Link key={item.itemId} to={`/item/${item.itemId}`} className="list-group-item list-group-item-action">
+            Item ID: {item.itemId}
+          </Link>
+        ))}
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 const ItemDetail = ({ match }: { match: { params: { id: string } } }) => {
   const [item, setItem] = useState<Item | null>(null);
