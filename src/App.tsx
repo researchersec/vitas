@@ -1,51 +1,84 @@
-import viteLogo from './assets/vite.svg'
-import reactLogo from './assets/react.svg'
-import sassLogo from './assets/sass.svg'
-import githubLogo from './assets/github.svg'
-import './App.scss'
+// src/App.tsx
+import React, { useEffect, useState } from 'react';
+import { BrowserRouter as Router, Route, Switch, Link } from 'react-router-dom';
+import { getItemData } from './dataLoader';
 
-function App() {
-  return (
-    <div className="App">
-
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://reactjs.org" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-        <a href="https://sass-lang.com" target="_blank">
-          <img src={sassLogo} className="logo sass" alt="Sass logo" />
-        </a>
-      </div>
-
-      <h2>Vite + React + Sass</h2>
-      <p className="read-the-docs">
-        Click on the logos to learn more about each too
-      </p>
-
-      <div>
-        
-      </div>
-      
-      <div className="card">
-        <a className="center" href="https://github.com/MengLinMaker/PWA-Vite-React-Boilerplate" target="_blank">
-          <button className="credits">
-            <img src={githubLogo} className="logo github" alt="Vite logo" />
-            <p>Meng Lin Maker</p>
-          </button>
-        </a>
-        
-        <h1>
-          <a href="https://github.com/MengLinMaker/PWA-Vite-React-Boilerplate/generate" target="_blank">
-            <button> Use This Boilerplate </button>
-          </a>
-        </h1>
-      </div>
-
-    </div>
-  )
+interface Item {
+  auctionHouseId: number;
+  itemId: number;
+  petSpeciesId: number | null;
+  minBuyout: number;
+  quantity: number;
+  marketValue: number;
+  historical: number;
+  numAuctions: number;
 }
 
-export default App
+const Home = ({ items }: { items: Item[] }) => (
+  <div>
+    <h2>Items</h2>
+    <div className="list-group">
+      {items.map(item => (
+        <Link key={item.itemId} to={`/item/${item.itemId}`} className="list-group-item list-group-item-action">
+          Item ID: {item.itemId}
+        </Link>
+      ))}
+    </div>
+  </div>
+);
+
+const ItemDetail = ({ match }: { match: { params: { id: string } } }) => {
+  const [item, setItem] = useState<Item | null>(null);
+
+  useEffect(() => {
+    const fetchItem = async () => {
+      const items = await getItemData();
+      const item = items.find((item: Item) => item.itemId === parseInt(match.params.id));
+      setItem(item);
+    };
+
+    fetchItem();
+  }, [match.params.id]);
+
+  if (!item) {
+    return <div>Loading...</div>;
+  }
+
+  return (
+    <div>
+      <h2>Item ID: {item.itemId}</h2>
+      <p>Min Buyout: {item.minBuyout}</p>
+      <p>Market Value: {item.marketValue}</p>
+      <p>Quantity: {item.quantity}</p>
+      <p>Num Auctions: {item.numAuctions}</p>
+      <Link to="/">Go back</Link>
+    </div>
+  );
+};
+
+const App = () => {
+  const [items, setItems] = useState<Item[]>([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const data = await getItemData();
+      setItems(data);
+    };
+
+    fetchData();
+  }, []);
+
+  return (
+    <Router>
+      <div className="container">
+        <h1>TypeScript Webpage</h1>
+        <Switch>
+          <Route path="/" exact render={() => <Home items={items} />} />
+          <Route path="/item/:id" component={ItemDetail} />
+        </Switch>
+      </div>
+    </Router>
+  );
+};
+
+export default App;
